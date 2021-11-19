@@ -5,7 +5,7 @@
   "main": "app.js",
   "scripts": {
     "dev": "nodemon  -w ./ --exec \"babel-node app.js --presets es2015,stage-0\" --inspect",
-    "start": "nodemon  -w ./ --exec \"babel-node app.js --presets es2015,stage-0\" --inspect"
+    "start": "node  -w ./ --exec \"babel-node app.js --presets es2015,stage-0\" --inspect"
   },
   "author": "Daily Code Buffer",
   "license": "ISC",
