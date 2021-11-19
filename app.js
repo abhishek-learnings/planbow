@@ -1,16 +1,17 @@
-const express = require('express');
+import express from 'express'
 const app = express();
-const Joi = require('@hapi/joi');
-const movies = require('./movies');
-
+//const movies = require('./movies');
+import authentication from './Authentication'
 app.use(express.json());
 
-app.use('/abc', movies);
 
+authentication(app)
 
 app.get('/', (req,res) => {
     res.send('Welcome to planbow!!');
 })
+
+
 
 
 
