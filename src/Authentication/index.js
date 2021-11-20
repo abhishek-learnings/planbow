@@ -1,7 +1,7 @@
 import db from '../config/MongoConfig'
 import jwt from 'jsonwebtoken'
 import bcrypt, { hash } from 'bcryptjs'
-import verifyToken from './auth'
+import verifyToken from '../middelware/auth'
 
 
 export default (app) => {
