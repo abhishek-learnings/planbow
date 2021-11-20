@@ -1,6 +1,7 @@
 import db from '../config/MongoConfig'
 import jwt from 'jsonwebtoken'
 import bcrypt, { hash } from 'bcryptjs'
+import verifyToken from './auth'
 
 
 export default (app) => {
@@ -119,9 +120,9 @@ export default (app) => {
         }
     });
 
-    // app.get("/welcome", auth, (req, res) => {
-    //     res.status(200).send("Welcome 🙌 ");
-    // });
+    app.get("/welcome", verifyToken, (req, res) => {
+        res.status(200).send("Welcome 🙌 ");
+    });
 
     // This should be the last route else any after it won't work
     app.use("*", (req, res) => {
