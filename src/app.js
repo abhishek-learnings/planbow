@@ -5,11 +5,13 @@ import authentication from './Authentication'
 app.use(express.json());
 
 
-authentication(app)
-
 app.get('/', (req,res) => {
     res.send('Welcome to planbow!!');
 })
+
+authentication(app)
+
+
 
 
 
