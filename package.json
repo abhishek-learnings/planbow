@@ -4,8 +4,8 @@
   "description": "Node Js Tutorial",
   "main": "app.js",
   "scripts": {
-    "dev": "nodemon  -w ./ --exec \"babel-node app.js --presets es2015,stage-0\" --inspect",
-    "start": "node  -w ./ --exec \"babel-node app.js --presets es2015,stage-0\" --inspect"
+    "dev": "nodemon  -w ./ --exec \"babel-node src/app.js --presets es2015,stage-0\" --inspect",
+    "build": "babel src --out-dir dist --presets=es2015 --source-maps inline --copy-files"
   },
   "author": "Daily Code Buffer",
   "license": "ISC",
