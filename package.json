@@ -5,7 +5,8 @@
   "main": "app.js",
   "scripts": {
     "dev": "nodemon  -w ./ --exec \"babel-node src/app.js --presets es2015,stage-0\" --inspect",
-    "build": "babel src --out-dir dist --presets=es2015 --source-maps inline --copy-files"
+    "build": "babel src --out-dir dist --presets=es2015 --source-maps inline --copy-files",
+    "start": "node dist/app.js"
   },
   "author": "Daily Code Buffer",
   "license": "ISC",
