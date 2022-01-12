@@ -1,7 +1,7 @@
-import db from '../config/MongoConfig'
+import db from '../../config/MongoConfig'
 import jwt from 'jsonwebtoken'
 import bcrypt, { hash } from 'bcryptjs'
-import verifyToken from '../middelware/auth'
+import verifyToken from '../../middelware/auth'
 
 
 export default (app) => {
@@ -53,7 +53,7 @@ export default (app) => {
                                         expiresIn: "2h",
                                     }
                                 );
-                                res.status(201).json({token :token});
+                                res.status(201).json({ token: token });
 
                             }
 
@@ -98,36 +98,36 @@ export default (app) => {
                                 }
                             );
 
-                            res.status(200).json({token :token});
+                            res.status(200).json({ token: token });
                         }
-                        else{
+                        else {
                             res.status(400).send("Invalid Credentials");
                         }
                     })
                     // Create token
 
                 }
-                else{
+                else {
                     res.status(400).send("Invalid Credentials");
                 }
 
             });
 
 
-           
+
         } catch (err) {
             console.log(err);
         }
     });
 
-    app.post("/refresh", verifyToken , (req,res) => {
+    app.post("/refresh", verifyToken, (req, res) => {
         const token =
-        req.body.token || req.query.token || req.headers["x-access-token"];
+            req.body.token || req.query.token || req.headers["x-access-token"];
 
         if (!token) {
             return res.status(401).end()
         }
-    
+
         var payload
         try {
             payload = jwt.verify(token, TOKEN_KEY)
@@ -138,7 +138,7 @@ export default (app) => {
             return res.status(400).end()
         }
         // (END) The code uptil this point is the same as the first part of the `welcome` route
-    
+
         // We ensure that a new token is not issued until enough time has elapsed
         // In this case, a new token will only be issued if the old token is within
         // 30 seconds of expiry. Otherwise, return a bad request status
@@ -146,34 +146,129 @@ export default (app) => {
         // if (payload.exp - nowUnixSeconds > 30) {
         //     return res.status(400).end()
         // }
-    
+
         // Now, create a new token for the current user, with a renewed expiration time
-        const newToken = jwt.sign({ user_id: payload.user_id , email : payload.email }, TOKEN_KEY, {
-           
+        const newToken = jwt.sign({ user_id: payload.user_id, email: payload.email }, TOKEN_KEY, {
+
             expiresIn: "2h",
         })
-    
+
         // Set the new token as the users `token` cookie
         // res.cookie("token", newToken, { maxAge: jwtExpirySeconds * 1000 })
         // res.end()
-        res.status(200).json({token : newToken});
+        res.status(200).json({ token: newToken });
     })
+
+    app.post("/sso-login", async (req, res) => {
+        try {
+            // Get user input
+            const { email, googleId, imageUrl, name, givenName } = req.body;
+
+
+            // Validate if user exist in our database
+            db.User.findOne({ email }, (err, doc) => {
+
+                if (doc) {
+                    if (googleId === doc.googleId) {
+                        const token = jwt.sign(
+                            { user_id: doc._id, email },
+                            TOKEN_KEY,
+                            {
+                                expiresIn: "2h",
+                            }
+                        );
+
+                        res.status(201).json({ token: token });
+                    }
+                    else {
+                        res.status(400).send("Invalid Credentials");
+                    }
+
+
+                    // Create token
+
+                }
+                else {
+                    db.User.insert({
+                        googleId: googleId,
+                        name: name,
+                        givenName: givenName,
+                        imageUrl: imageUrl,
+                        email: email.toLowerCase(), // sanitize: convert email to lowercase
+                    }, (err, doc) => {
+
+                        if (doc) {
+                            const token = jwt.sign(
+                                { user_id: doc._id, email },
+                                TOKEN_KEY,
+                                {
+                                    expiresIn: "2h",
+                                }
+                            );
+                            res.status(201).json({ token: token });
+
+                        }
+
+
+                    });
+                }
+
+            });
+
+
+
+        } catch (err) {
+            console.log(err);
+        }
+    });
+
+
+    app.post("/me", async (req, res) => {
+        const token =
+            req.body.token || req.query.token || req.headers["x-access-token"];
+
+        if (!token) {
+            return res.status(401).end()
+        }
+
+        var payload
+        try {
+            payload = jwt.verify(token, TOKEN_KEY)
+            let email = payload.email
+            db.User.findOne({ email }, (err, doc) => {
+
+                if (doc) {
+                    delete doc._id
+                    res.status(201).json({ profileObj: doc });
+
+                } else {
+                    res.status(400).send("Invalid Credentials");
+                }
+            });
+
+        } catch (e) {
+            if (e instanceof jwt.JsonWebTokenError) {
+                return res.status(401).end()
+            }
+            return res.status(400).end()
+        }
+    });
 
     app.get("/welcome", verifyToken, (req, res) => {
         res.status(200).send("Welcome 🙌 ");
     });
 
-    // This should be the last route else any after it won't work
-    app.use("*", (req, res) => {
-        res.status(404).json({
-            success: "false",
-            message: "Page not found",
-            error: {
-                statusCode: 404,
-                message: "You reached a route that is not defined on this server",
-            },
-        });
-    });
+    // // This should be the last route else any after it won't work
+    // app.use("*", (req, res) => {
+    //     res.status(404).json({
+    //         success: "false",
+    //         message: "Page not found",
+    //         error: {
+    //             statusCode: 404,
+    //             message: "You reached a route that is not defined on this server",
+    //         },
+    //     });
+    // });
 
     return app
 }
